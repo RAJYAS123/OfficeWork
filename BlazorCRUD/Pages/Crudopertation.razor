@@ -1,0 +1,117 @@
+﻿@page "/crud"
+@using BlazorCRUD.Data
+@using BlazorCRUD.Services
+@inherits OwningComponentBase<EmpServices>
+<h3>CRUD Opertation</h3>
+<button class="btn btn-primary" @onclick="Showpopup">Add New Employee</button>
+@if (popup)
+{
+
+    <div class="modal" tabindex="-1" style="display:block;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Insert New Employee</h5>
+                    @*<button type="button" class="btn btn-close btn-danger" aria-label="Close" @onclick="Closepopup"></button>*@
+                </div>
+                <EditForm Model="objinsert" OnValidSubmit="Insertrec">
+
+                    <div class="modal-body">
+                        <table>
+                            <tr>
+                                <th>Employee Name</th>
+                                <td><input type="text" placeholder="Enter Employee Name.." @bind="objinsert.EmpName" /></td>
+                            </tr>
+                            <tr>
+                                <th>Department</th>
+                                <td><input type="text" placeholder="Enter Department" @bind="objinsert.Department" /></td>
+                            </tr>
+                            <tr>
+                                <th>Salary</th>
+                                <td><input type="text" placeholder="Enter Salary" @bind="objinsert.Salary" /></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="Closepopup">Close</button>
+                        <button type="submit" class="btn btn-primary" @onclick="Closepopup">Save changes</button>
+                    </div>
+                </EditForm>
+
+            </div>
+        </div>
+    </div>
+
+}
+<table class="table">
+    <tr>
+        <th>Employee ID</th>
+        <th>Employee Name</th>
+        <th>Department</th>
+        <th>Salary</th>
+    </tr>
+    @foreach (var item in Displaydata)
+    {
+        <tr>
+            <td>@item.EmpId</td>
+            <td>@item.EmpName</td>
+            <td>@item.Department</td>
+            <td>@item.Salary</td>
+            <td><button class="btn-info" @onclick="(()=>Editrec(item))">Edit</button></td>
+            <td><button class="btn-danger" @onclick="(()=>DeleteEmprec(item))">Delete</button></td>
+        </tr>
+    }
+</table>
+@code {
+    List<EmpClass> Displaydata;
+    EmpClass objinsert = new EmpClass();
+
+    bool popup = false;
+    void Showpopup()
+    {
+        popup = true;
+    }
+
+    void Closepopup()
+    {
+        popup = false;
+    }
+
+    protected override void OnInitialized()
+    {
+        Displaydata = Service.GetEmployeess();
+    }
+
+    void Insertrec()
+    {
+        var objupdate = false;
+        if (objinsert.EmpId > 0)
+        {
+            objupdate = Service.UpdateEmployee(objinsert);
+            popup = false;
+        }
+        else
+        {
+
+            objinsert.EmpId = 0;
+            Service.AddEmployee(objinsert);
+        }
+        Displaydata = Service.GetEmployeess();
+        
+    }
+
+    void Editrec(EmpClass ecobj)
+    {
+        objinsert = ecobj;
+        popup = true;
+    }
+
+    void DeleteEmprec(EmpClass ecobj)
+    {
+        Service.DeleteEmployee(ecobj);
+        Displaydata.Clear();
+        Displaydata = Service.GetEmployeess();
+    }
+
+   
+}
